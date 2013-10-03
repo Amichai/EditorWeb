@@ -1,0 +1,148 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+}
+
+
+<script>
+    var lineNumber = -1;
+    function submit() {
+        if (event.keyCode != 13) {
+            return;
+        }
+        var encoded = encodeURIComponent($('#inputBox').val());
+        lineNumber++;
+        //debugger;
+        if (selected == 'Python') {
+            $.ajax({
+                url: '@Url.Action("AppendPython")' + '?inputText=' + encoded + '&lineNumber=' + lineNumber,
+                type: 'POST',
+            }).done(function (data) {
+                $('#results').append($("<div style='padding:10px;word-wrap:break-word;white-space:pre;'/>").append(data));
+                //debugger;
+                //$('#results').append(data);
+            });
+        } else if (selected == 'C#') {
+            debugger;
+            $.ajax({
+                url: '@Url.Action("AppendCSharp")' + '?inputText=' + encoded + '&lineNumber=' + lineNumber,
+                type: 'POST',
+            }).done(function (data) {
+                $('#results').append($("<div style='padding:10px;word-wrap:break-word;white-space:pre;'/>").append(data));
+            });
+        } else if (selected == 'LaTeX') {
+            $.ajax({
+                url: '@Url.Action("AppendLatex")' + '?inputText=' + encoded,
+                type: 'POST',
+            }).done(function (data) {
+                $('#results').append($("<div style='padding:10px;word-wrap:break-word;white-space:pre;'/>").append(data));
+            });
+        } else if (selected == 'XML/JSON') {
+            $.ajax({
+                url: '@Url.Action("XMLJSON")' + '?inputText=' + encoded + '&lineNumber=' + lineNumber,
+                type: 'POST',
+            }).done(function (data) {
+                debugger;
+                var accordian = '\
+                <div class="panel-group" id="accordion' + lineNumber + '" style="padding:10px">\
+    <div class="panel panel-default">\
+        <div class="panel-heading">\
+            <div class="row">\
+                <h4 class="panel-title col-md-1">\
+                    <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion' + lineNumber + '" href="#collapse' +  lineNumber + '">Show/Hide\
+                    </a>\
+                </h4>\
+            </div>\
+        </div>\
+        <div id="collapse' + lineNumber + '" class="panel-collapse collapse in">\
+            <div class="panel-body" id="dataResult' +  lineNumber + '">\
+            </div>\
+        </div>\
+    </div>\
+</div>';
+
+                $('#results').append(accordian);
+                
+                $('#dataResult' + lineNumber).append($("<div style='padding:10px;word-wrap:break-word;white-space:pre;'/>").text(data));
+            });
+        }
+
+    }
+
+    function deleteLast() {
+        lineNumber--;
+        $('#results').children().last().remove();
+    }
+
+    function deselect() {
+        $('#inputOptions').find('.active').removeClass('active');
+    }
+
+    var selected = "Python";
+
+    function select(e) {
+        e.addClass('active');
+        selected = e.find('a').text();
+    }
+
+    function latex() {
+        deselect();
+        select($('#latexPill').parent());
+    }
+
+    function cSharp() {
+        deselect();
+        select($('#cSharpPill').parent());
+    }
+
+    function url() {
+        deselect();
+        select($('#urlPill').parent());
+    }
+
+    function python() {
+        deselect();
+        select($('#pythonPill').parent());
+    }
+
+    function xaml() {
+        deselect();
+        select($('#xamlPill').parent());
+    }
+
+    function xmlJson() {
+        deselect();
+        select($('#xmlJsonPill').parent());
+    }
+</script>
+
+
+
+
+<div style="float: right; width: 200px">
+    <ul class="nav nav-pills nav-stacked" id="inputOptions">
+        <li><a href="#" onclick="cSharp()" id="cSharpPill">C#</a></li>
+        <li class="active"><a href="#" onclick="python()" id="pythonPill">Python</a></li>
+        <li><a href="#" onclick="xaml()" id="xamlPill">XAML</a></li>
+        @*<li><a href="#" onclick="url()" id="urlPill">Url</a></li>*@
+        <li><a href="#" onclick="latex()" id="latexPill">LaTeX</a></li>
+        <li><a href="#" onclick="xmlJson()" id="xmlJsonPill">XML/JSON</a></li>
+
+        @*<button type="button" class="btn btn-default" onclick="deleteLast()">Delete</button>*@
+    </ul>
+
+</div>
+
+
+<div id="results">
+</div>
+
+<div class="row">
+    <div class="col-md-9">
+        <input type="text" class="form-control" id="inputBox" onkeydown="submit()">
+    </div>
+    @*<div class="col-md-1">
+        <button type="button" class="btn btn-default" onclick="submit()">Append</button>
+    </div>*@
+    @*<div class="col-md-1">
+    </div>*@
+</div>
