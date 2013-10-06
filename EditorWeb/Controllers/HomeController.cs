@@ -18,13 +18,16 @@ namespace EditorWeb.Controllers {
     public class HomeController : Controller {
         public ActionResult Index() {
             ViewBag.Message = "Modify this template to jump-start your ASP.NET MVC application.";
+            if (Session["python"] == null) {
+                IInputModule python = new IronPython();
+                Session.Add("python", python);
+            }
             loadScriptEngine();
             return View();
         }
 
         public ActionResult About() {
             ViewBag.Message = "Your app description page.";
-
             return View();
         }
 
@@ -34,7 +37,6 @@ namespace EditorWeb.Controllers {
             return View();
         }
 
-        static IInputModule python = new IronPython();
         static IInputModule latex = new LatexParser();
 
         private string wrapInDiv(string html) {
@@ -48,7 +50,7 @@ namespace EditorWeb.Controllers {
                 return Json("");
             }
             try {
-                var result = python.ForHtml(inputText);
+                var result = (Session["python"] as IronPython).ForHtml(inputText);
                 if (string.IsNullOrWhiteSpace(result)) {
                     CSharpAssign(result, lineNumber);                    
                     return Json(inputText);
@@ -74,6 +76,9 @@ namespace EditorWeb.Controllers {
         }
 
         private void CSharpAssign(string result, string lineNumber) {
+            if (result == null) {
+                return;
+            }
             string lastValName = "_" + lineNumber;
             var escapedString = result.Replace("\"", "\"\"");
             var assign = "var " + lastValName + " = @\"" + escapedString + "\";";
