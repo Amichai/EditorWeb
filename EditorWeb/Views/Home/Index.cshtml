@@ -6,12 +6,19 @@
 <script>
     var lineNumber = -1;
     function submit() {
-        if (event.keyCode != 13) {
+        //debugger;
+        if (event.keyCode != 13 || !event.ctrlKey) {
             return;
         }
         var encoded = encodeURIComponent($('#inputBox').val());
         lineNumber++;
-        //debugger;
+
+        if (encoded.charAt(encoded.length - 1) == "'") {
+            var toAppend = $('#inputBox').val();
+            $('#results').append($("<div style='padding:10px;word-wrap:break-word;white-space:pre;'/>").append(toAppend.substring(0, toAppend.length - 1)));
+            $('#inputBox').val("");
+            return;
+        }
         if (selected == 'Python') {
             $.ajax({
                 url: '@Url.Action("AppendPython")' + '?inputText=' + encoded + '&lineNumber=' + lineNumber,
@@ -26,7 +33,9 @@
         } else if (selected == 'C#') {
             debugger;
             $.ajax({
-                url: '@Url.Action("AppendCSharp")' + '?inputText=' + encoded + '&lineNumber=' + lineNumber,
+                //url: '@Url.Action("AppendCSharp")' + '?inputText=' + encoded + '&lineNumber=' + lineNumber,
+                url: '@Url.Action("AppendCSharp")' + '?lineNumber=' + lineNumber,
+                data: encoded,
                 type: 'POST',
             }).done(function (data) {
                 $('#results').append($("<div style='padding:10px;word-wrap:break-word;white-space:pre;'/>").append(data));
@@ -141,7 +150,8 @@ function xmlJson() {
 
 <div style="float: left">
     <div style="width: 700px">
-        <input type="text" class="form-control" id="inputBox" onkeydown="submit()">
+        <textarea class="form-control" id="inputBox" onkeydown="submit()"></textarea>
+        @*<input type="text" class="form-control" id="inputBox" onkeydown="submit()">*@
     </div>
     <button style="float: left" onclick="deleteLast()">Delete</button>
 

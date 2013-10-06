@@ -12,6 +12,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
+using System.Xml;
 using System.Xml.Linq;
 
 namespace EditorWeb.Controllers {
@@ -85,14 +86,21 @@ namespace EditorWeb.Controllers {
             session.Execute(assign);
         }
 
-        [HttpPost]
-        public ActionResult AppendCSharp(string inputText, string lineNumber) {
+        [HttpPost, ValidateInput(false)]
+        public ActionResult AppendCSharp(string lineNumber) {
+            string inputText = Request.Form[0];
             if (string.IsNullOrWhiteSpace(inputText)) {
                 return Json("");
             }
-            try {
+            try {   
                 var result = session.Execute(inputText);
+                if (result == null) {
+                    return Json(inputText);
+                }
                 CSharpAssign(inputText, result.ToString(), lineNumber);
+                if (inputText.Last() == ';') {
+                    return Json(inputText);
+                }
                 return Json(result.ToString());
             } catch (Exception ex) {
                 return Json(ex.Message);
@@ -104,8 +112,12 @@ namespace EditorWeb.Controllers {
             engine.AddReference(typeof(System.Linq.Enumerable).Assembly.Location);
             engine.AddReference(typeof(JObject).Assembly.Location);
             engine.AddReference(typeof(XElement).Assembly.Location);
-
             engine.AddReference(typeof(FunctionLibrary).Assembly.Location);
+            
+            ///Untested
+            //engine.AddReference(typeof(Uri).Assembly.Location);
+            //engine.AddReference(typeof(XmlAttribute).Assembly.Location);
+
             engine.AddReference(new MetadataFileReference(@"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\System.dll"));
             engine.AddReference(new MetadataFileReference(@"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\System.Xml.dll"));
 
